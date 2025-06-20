@@ -113,8 +113,21 @@ def interact(infer_driver, embed_driver, rerank_driver, infer_lock, embed_lock, 
         with message_lock:
             messages += new_message
 
+        send_message = messages.copy()
+        for image in images:
+            send_message.append(
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "image": image,
+                        }
+                    ],
+                }
+            )
         print("Qwen:", end=" ")
-        output = infer(messages, infer_driver, use_streamer=True)
+        output = infer(send_message, infer_driver, use_streamer=True)
 
     new_response = [
         {
