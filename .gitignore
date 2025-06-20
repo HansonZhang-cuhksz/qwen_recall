@@ -3,5 +3,6 @@ clipModels
 qwenEmbedding
 qwenReranking
 qwenVL
+qwenVL-7B
 glmEdgeV
 demo.py

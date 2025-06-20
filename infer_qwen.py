@@ -25,7 +25,7 @@ def init(force_cpu=False):
     return model, processor
 
 def infer(msg, model_processor, use_streamer=False):
-    # print(msg)
+    print(msg)
     model, processor = model_processor
 
     # Preparation for inference
@@ -44,8 +44,7 @@ def infer(msg, model_processor, use_streamer=False):
 
     # Inference: Generation of the output
     if use_streamer:
-        placeholder = st.empty()
-        streamer = StreamlitTextStreamer(processor.tokenizer, placeholder)
+        streamer = StreamlitTextStreamer(processor.tokenizer, skip_prompt=True, skip_special_tokens=True)
         generated_ids = model.generate(**inputs, max_new_tokens=1024, streamer=streamer)
     else:
         generated_ids = model.generate(**inputs, max_new_tokens=1024)

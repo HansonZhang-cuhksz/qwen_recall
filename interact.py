@@ -24,11 +24,13 @@ def find_type(attachment):
 
 def readlines(file_pth, linenos):
     output = []
+    valid_linenos = []
     with open(file_pth, "r", encoding="utf-8") as f:
         for i, line in enumerate(f):
             if i in linenos:
                 output.append(line.strip())
-    return output
+                valid_linenos.append(i)
+    return output, valid_linenos
 
 def get_images(indices):
     global timestamp_map, memory_dir
@@ -64,12 +66,12 @@ def get_knowledge(question, embed_driver, rerank_driver, embed_lock):
     # print(retrieved_indices)
     if len(retrieved_indices) == 0:
         return [], [], []
-    texts = readlines(descriptions_file, retrieved_indices)
+    texts, _ = readlines(descriptions_file, retrieved_indices)
     new_indices = rerank(question, texts, rerank_driver)
     retrieved_indices = [retrieved_indices[i] for i in new_indices]
-    texts = readlines(descriptions_file, retrieved_indices)
-    images, timestamps = get_images(retrieved_indices)
-    print(timestamp_map, retrieved_indices)
+    texts, valid_indices = readlines(descriptions_file, retrieved_indices)
+    images, timestamps = get_images(valid_indices)
+    print(timestamp_map, valid_indices)
     return texts, images, timestamps
 
 def interact(infer_driver, embed_driver, rerank_driver, infer_lock, embed_lock, message_lock, attachments, question):
@@ -83,7 +85,7 @@ def interact(infer_driver, embed_driver, rerank_driver, infer_lock, embed_lock, 
                 ],
             }
         ]
-        for attachment in attachments.split(","):
+        for attachment in attachments:
             if not attachment.strip():
                 continue
             try:

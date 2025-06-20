@@ -4,7 +4,7 @@ if __name__ == "__main__":
     import os
     import markdown
 
-    from utils import image_dir, descriptions_file
+    from utils import memory_dir, image_dir, descriptions_file
     import interact
 
     st.title("Qwen Recall")
@@ -25,6 +25,10 @@ if __name__ == "__main__":
             file_path = os.path.join(image_dir, file)
             if os.path.isfile(file_path):
                 os.remove(file_path)
+        for file in os.listdir(memory_dir / "temp"):
+            file_path = os.path.join(image_dir, file)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
 
         st.session_state.infer_driver = infer_qwen.init(force_cpu=False)
         st.session_state.embed_driver = embedding.init(force_cpu=True)
@@ -41,12 +45,15 @@ if __name__ == "__main__":
         if "capture_thread" not in st.session_state:
             st.session_state.capture_thread = threading.Thread(target=capture_task, args=(st.session_state.image_diff_driver,))
             st.session_state.capture_thread.start()
+            print("Capture thread on ", st.session_state.capture_thread.native_id)
         if "decode_thread" not in st.session_state:
             st.session_state.decode_thread = threading.Thread(target=decode_task, args=(st.session_state.infer_driver, st.session_state.infer_lock))
             st.session_state.decode_thread.start()
+            print("Decode thread on ", st.session_state.decode_thread.native_id)
         if "embed_thread" not in st.session_state:
             st.session_state.embed_thread = threading.Thread(target=embed_task, args=(st.session_state.embed_driver,st.session_state.embed_lock))
             st.session_state.embed_thread.start()
+            print("Embed thread on ", st.session_state.embed_thread.native_id)
 
     def ask(attachments, question):
         return interact.interact(
@@ -59,7 +66,6 @@ if __name__ == "__main__":
         if end_idx == -1:
             end_idx = len(content)
         return content[start_idx:end_idx].strip()
-
 
     def update_history(chat_container):
         for message in interact.messages:
@@ -94,9 +100,20 @@ if __name__ == "__main__":
 
     # Place the chat bar at the bottom
     with st.form("chat_form", clear_on_submit=True):
+        attached_files = st.file_uploader("Upload files", type=["png", "jpg", "jpeg", "mp4", "mkv", "webm"], accept_multiple_files=True, key="file_uploader")
+        file_paths = []
+        for attached_file in attached_files:
+            pth = memory_dir / "temp" / attached_file.name
+            with open(pth, "wb") as f:
+                f.write(attached_file.getvalue())
+            file_paths.append(str(pth))
+
         user_input = st.text_input("Ask Qwen Recall", "")
         submitted = st.form_submit_button("Send")
         if submitted and user_input:
-            print(ask("", user_input))
+            ask(file_paths, user_input)
             with chat_container:
                 update_history(st)
+            for file_path in file_paths:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
