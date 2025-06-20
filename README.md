@@ -44,10 +44,11 @@ qwen_recall/
 └── //Omitted
 ```
 
-Change the paths in utils.py to a valid path to store cached images and descriptions. The file structure should be like:
+Change the paths in utils.py to a valid path to store cached images, temperary files, and descriptions. The file structure should be like:
 ```
 qwen_memory/
 ├── images/
+├── temp/
 └── descriptions.txt
 ```
 
