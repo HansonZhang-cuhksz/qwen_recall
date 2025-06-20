@@ -1,0 +1,12 @@
+pyautogui
+torch
+modelscope
+transformers
+hnswlib
+numpy
+streamlit
+open_clip
+pillow
+open_clip_torch
+qwen_vl_utils
+markdown

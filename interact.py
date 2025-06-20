@@ -5,7 +5,6 @@ from reranking import rerank
 from utils import descriptions_file, memory_dir
 
 import os
-import streamlit as st
 
 prompt = """You are a helpful assistant that answers questions based on provided background knowledge.
 The knowledges are provided after \"Background knowledges:\", in the format of \"timestamp: knowledge\".
